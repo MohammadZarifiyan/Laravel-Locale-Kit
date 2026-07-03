@@ -9,7 +9,7 @@ The package also supports custom locale definitions and locale aliases.
 Install the package via Composer:
 
 ```shell
-composer require mohammad-zarifiyan/laravel-locale-kit:^1.1
+composer require mohammad-zarifiyan/laravel-locale-kit:^2.0
 ```
 
 # Publishing Locale Definitions
@@ -198,48 +198,50 @@ Example result:
 
 The returned array is keyed by locale identifier, and each value contains the complete locale definition loaded by the package, including custom locale definitions.
 
-## Exporting Locale Definitions
+# Exporting Locale Definitions
 
-To export all loaded locale definitions as JSON files:
+You can export all loaded locale data into a single JSON file.
 
 ```shell
-php artisan locale-kit:export
+php artisan locale-kit:export resources/locales.json
 ```
 
-By default, the files are exported to `resources/locales`.
+The command accepts a single required argument: the destination file path.
 
-Each locale definition is exported as a separate JSON file using its locale identifier as the filename.
-
-Example:
-
-```text
-resources/locales/
-├── meta.json
-├── en_US.json
-├── en_GB.json
-├── fa_IR.json
-└── ar_SA.json
-```
-
-The generated `meta.json` file contains additional information about the exported locales:
+Example output:
 
 ```json
 {
     "locales": [
         "en",
-        "fa",
-        "ar"
+        "fa"
     ],
     "defined_locales": [
         "en_US",
-        "en_GB",
-        "fa_IR",
-        "ar_SA"
+        "fa_IR"
     ],
     "aliases": {
         "en": "en_US",
-        "fa": "fa_IR",
-        "ar": "ar_SA"
+        "fa": "fa_IR"
+    },
+    "definitions": {
+        "en_US": {
+            "direction": "ltr"
+        },
+        "fa_IR": {
+            "direction": "rtl"
+        }
     }
 }
 ```
+
+The exported file contains:
+
+| Key | Description |
+| ---- | ----------- |
+| `locales` | All application locales found in Laravel's `lang` directory. |
+| `defined_locales` | All available locale definitions, including custom definitions. |
+| `aliases` | All registered locale aliases. |
+| `definitions` | All loaded locale definitions. |
+
+This export is useful for frontend applications, build pipelines, or any external service that needs access to the complete locale metadata without loading Laravel.

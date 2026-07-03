@@ -3,67 +3,56 @@
 namespace MohammadZarifiyan\LaravelLocaleKit\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\File;
 use MohammadZarifiyan\LaravelLocaleKit\LocaleKit;
 
 class Export extends Command
 {
-	protected $signature = 'locale-kit:export {--directory=resources/locales : The directory where locale definition files will be exported} {--clean-directory=false : Clean the directory before storing JSON files}';
+	protected $signature = 'locale-kit:export {path : The path where the file will be exported}';
 
-	protected $description = 'Export all locale definitions as JSON files.';
+	protected $description = 'Export all locale definitions as JSON file.';
 
+	/**
+	 * @throws \JsonException
+	 */
 	public function handle(): int
 	{
-		$directory = $this->getDirectory();
+		$path = $this->argument('path');
+
+		if (!str_starts_with($path, DIRECTORY_SEPARATOR)) {
+			$path = base_path($path);
+		}
+
+		$directory = dirname($path);
 
 		File::ensureDirectoryExists($directory);
 
-		if (!File::isEmptyDirectory($directory) && $this->hasOption('clean-directory') && $this->option('clean-directory') !== 'false') {
-			File::cleanDirectory($directory);
+		$result = File::put($path, $this->generateFileContent());
 
-			$this->info(sprintf('Cleaned directory "%s".', $directory));
-		}
+		if ($result) {
+			$this->info(sprintf('File saved to "%s".', $path));
 
-		$meta = [
-			'locales' => LocaleKit::locales(),
-			'defined_locales' => LocaleKit::definedLocales(),
-			'aliases' => LocaleKit::aliases(),
-		];
-		$metaFilePath = $directory . DIRECTORY_SEPARATOR . 'meta.json';
-		$savedMeta = File::put($metaFilePath, json_encode($meta));
-
-		if ($savedMeta) {
-			$this->info(sprintf('Meta file saved to "%s".', $metaFilePath));
+			return Command::SUCCESS;
 		}
 		else {
-			$this->error(sprintf('Meta file could not be saved to "%s".', $metaFilePath));
+			$this->error(sprintf('File could not be saved to "%s".', $path));
 
 			return Command::FAILURE;
 		}
-
-		foreach (LocaleKit::definitions() as $identifier => $definition) {
-			$dottedDefinition = Arr::dot($definition);
-			$definitionPath = $directory . DIRECTORY_SEPARATOR . $identifier . '.json';
-			$savedDefinition = File::put($definitionPath, json_encode($dottedDefinition));
-
-			if ($savedDefinition) {
-				$this->info(sprintf('Locale definition "%s" saved to "%s".', $identifier, $definitionPath));
-			}
-			else {
-				$this->error(sprintf('Locale definition "%s" could not be saved to "%s".', $identifier, $definitionPath));
-
-				return Command::FAILURE;
-			}
-		}
-
-		return Command::SUCCESS;
 	}
 
-	protected function getDirectory(): string
+	/**
+	 * @throws \JsonException
+	 */
+	protected function generateFileContent(): string
 	{
-		$directory = $this->option('directory');
+		$data = [
+			'locales' => LocaleKit::locales(),
+			'defined_locales' => LocaleKit::definedLocales(),
+			'aliases' => LocaleKit::aliases(),
+			'definitions' => LocaleKit::definitions(),
+		];
 
-		return base_path($directory);
+		return json_encode($data, JSON_THROW_ON_ERROR);
 	}
 }
