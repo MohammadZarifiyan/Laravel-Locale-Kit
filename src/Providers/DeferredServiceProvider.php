@@ -11,7 +11,7 @@ class DeferredServiceProvider extends ServiceProvider implements DeferrableProvi
 {
 	public function register(): void
 	{
-		$this->app->bind(LocaleManager::class , function (Application $application) {
+		$this->app->singleton(LocaleManager::class , function (Application $application) {
 			$defaultLocale = $application->getLocale();
 
 			return new LocaleManager($defaultLocale);
