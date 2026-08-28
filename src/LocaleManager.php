@@ -12,11 +12,6 @@ class LocaleManager
 {
 	protected array $aliases = [];
 
-	public function __construct(public string $defaultLocale)
-	{
-		//
-	}
-
 	public function alias(string $alias, string $identifier): void
 	{
 		if (str_contains($alias, '_')) {
@@ -53,7 +48,9 @@ class LocaleManager
 		$langDirectory = lang_path();
 
 		if (!File::exists($langDirectory)) {
-			return [$this->defaultLocale];
+			$defaultLocale = app()->getLocale();
+
+			return [$defaultLocale];
 		}
 
 		$directories = array_map(
@@ -83,7 +80,7 @@ class LocaleManager
 
 	public function get(string $key, ?string $locale = null)
 	{
-		$identifier = $this->getIdentifier($locale ?: $this->defaultLocale);
+		$identifier = $this->getIdentifier($locale ?: app()->getLocale());
 
 		if (is_null($identifier)) {
 			return null;
