@@ -5,7 +5,7 @@ namespace MohammadZarifiyan\LaravelLocaleKit\Providers;
 use Illuminate\Support\ServiceProvider;
 use MohammadZarifiyan\LaravelLocaleKit\Commands\Export;
 
-class LocaleKitServiceProvider extends ServiceProvider
+class InstantServiceProvider extends ServiceProvider
 {
 	public function boot(): void
 	{
